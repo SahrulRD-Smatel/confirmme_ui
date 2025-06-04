@@ -4,7 +4,7 @@ import { ThemeProvider } from "./context/ThemeContext.tsx";
 import { BrowserRouter } from "react-router-dom"; // ✅ Hanya satu BrowserRouter
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
-import App from "./App.tsx";
+import App from "./App";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
