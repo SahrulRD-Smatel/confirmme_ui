@@ -27,8 +27,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const res = await api.get("/Auth/me");
       const { role, fullName } = res.data;
       set({ role, fullName, isLoading: false });
-    } catch (err){
-      console.log("error:", err);
+    } catch{
       localStorage.removeItem("token");
       set({ role: null, fullName: null, isLoading: false });
     }
