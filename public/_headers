@@ -1,0 +1,18 @@
+/*
+
+  # Pastikan semua file JavaScript dikirim dengan MIME type yang benar
+/assets/*.js
+  Content-Type: application/javascript
+
+/assets/*.js.map
+  Content-Type: application/json
+
+/*.js
+  Content-Type: application/javascript
+
+/*.js.map
+  Content-Type: application/json
+
+# Untuk SPA agar routing client-side bisa bekerja dengan benar
+/*
+  /index.html 200
