@@ -19,6 +19,7 @@ import EditRequestPage from "./pages/ApprovalRequests/EditRequestPage";
 import MyRequestsPage from "./pages/ApprovalRequests/MyRequestsPage";
 
 import ApprovalInboxPage from "./pages/ApprovalInbox/ApprovalInboxPage";
+import ApprovalViaQRPage from "./pages/ApprovalInbox/ApprovalViaQRPage";
 import TaskListPage from"./pages/TaskList/TaskListPage"
 import TaskDetailPage from "./pages/TaskList/TaskDetailPage"
 
@@ -57,6 +58,7 @@ export default function App() {
 
             <Route path="/my-requests" element={<MyRequestsPage />} />
             <Route path="/approval-inbox" element={<ApprovalInboxPage />} />
+            <Route path="/approvalrequests/approval-via-qr" element={<ApprovalViaQRPage />} />
             <Route path="/approval-tasklist" element={<TaskListPage />} />
             <Route path="/approval-tasklist/:id" element={<TaskDetailPage />} />
             <Route path="/letters/metadata/:requestId" element={<LetterPage />} />
