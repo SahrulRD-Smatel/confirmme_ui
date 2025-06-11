@@ -56,7 +56,7 @@ const DashboardPage = () => {
 
         const [summaryRes, statsRes, waitingRes] = await Promise.all([
           api.get<SummaryData>('/dashboard', { headers }),
-          api.get<ApprovalStat[]>('/dashboard/approval-stats', { headers }),
+          api.get<ApprovalStat[]>('/dashboard/approval-monthly-by-type', { headers }),
           api.get<{ count: number }>('/dashboard/waiting-approval', { headers }),
         ]);
 

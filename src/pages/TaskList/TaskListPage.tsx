@@ -4,13 +4,13 @@ import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
 interface InboxItemDto {
-  id:number;
-  requestId: number;
+  requestId: string;
+  approvalRequestId: number;
   title: string;
   requestedById: string;
   status: string;
   createdAt: string;
-  step: number;
+  currentStep: number;
   totalSteps: number;
 }
 
@@ -47,7 +47,7 @@ const TaskListPage = () => {
           <table className="min-w-full border border-gray-200">
             <thead className="bg-gray-100">
               <tr>
-                <th className="px-4 py-2 border">#</th>
+                <th className="px-4 py-2 border"></th>
                 <th className="px-4 py-2 border">Title</th>
                 <th className="px-4 py-2 border">Requested By</th>
                 <th className="px-4 py-2 border">Status</th>
@@ -70,11 +70,15 @@ const TaskListPage = () => {
                   <td className="px-4 py-2 border">
                     {format(new Date(task.createdAt), "dd MMM yyyy")}
                   </td>
-                  <td className="px-4 py-2 border">{task.step}/{task.totalSteps}</td>
+                  <td className="px-4 py-2 border">Permintaan ke {task.currentStep} dari {task.totalSteps} Permintaan</td>
                   <td className="px-4 py-2 border">
                     <button
-                      onClick={() => navigate(`/approval-tasklist/:id`)}
-                      className="text-blue-600 hover:underline text-sm"
+                      onClick={() => {
+                        if (task.approvalRequestId != null) navigate(`/approval-tasklist/${task.approvalRequestId}`);
+                        else console.error("task.id is invalid", task);
+                      }}
+                      
+                      className="text-blue-600 hover:underline text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       View Details
                     </button>

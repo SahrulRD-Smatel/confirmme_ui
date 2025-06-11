@@ -42,7 +42,7 @@ const navItems: NavItem[] = [
     name: "Approval Task List",
     icon: <ListIcon />,
     path: "/approval-tasklist",
-    role: ["HRD", "Direktur"],
+    role: ["Manager", "HRD", "Direktur"],
   },
   {
     name: "Approval Inbox",
