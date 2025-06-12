@@ -113,7 +113,7 @@ export default function ApprovalRequestsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4 sm:p-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold">Task List</h1>
+        <h1 className="text-2xl font-bold">Request List</h1>
         <Button
           onClick={() => navigate("/approval-requests/create")}
           className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white rounded-2xl px-6 py-2 shadow-md transition-all hover:scale-105"
@@ -182,7 +182,7 @@ export default function ApprovalRequestsPage() {
                   isRequest
                   currentPage={currentPage}
                   itemsPerPage={itemsPerPage}
-                  onView={navigate}
+                  onView={(id) => navigate(`/approval-requests/${id}`)}
                   onDelete={handleDelete}
                 />
                 <Pagination

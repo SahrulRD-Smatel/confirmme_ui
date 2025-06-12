@@ -16,6 +16,7 @@ interface ApprovalInboxItem {
   currentStepIndex: number;
   totalSteps: number;
   submittedAt: string;
+  flowId: number;
 }
 
 export default function ApprovalInboxPage() {
@@ -84,9 +85,9 @@ export default function ApprovalInboxPage() {
     setQrModal({ open: false, requestId: null });
   };
 
-  const generateQrUrl = (action: "approve" | "reject", id: number) => {
-    return `${window.location.origin}/api/approvalrequests/qr-${action}/${id}`;
-  };
+  const generateQrUrlFromFlowId = (flowId: number) => {
+  return `https://localhost:32771/api/Barcode/generate-qr?flowId=${flowId}`;
+};
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
@@ -165,18 +166,18 @@ export default function ApprovalInboxPage() {
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="bg-white dark:bg-gray-800 p-6 rounded shadow-lg max-w-sm w-full space-y-4">
             <Dialog.Title className="text-lg font-semibold">QR Approval</Dialog.Title>
-            {qrModal.requestId && (
-              <div className="space-y-4 text-center">
-                <div>
-                  <p className="text-sm font-medium mb-1">Approve:</p>
-                  <QRCodeCanvas value={generateQrUrl("approve", qrModal.requestId)} size={160} />
-                </div>
-                <div>
-                  <p className="text-sm font-medium mb-1">Reject:</p>
-                  <QRCodeCanvas value={generateQrUrl("reject", qrModal.requestId)} size={160} />
-                </div>
-              </div>
-            )}
+            {qrModal.requestId && (() => {
+  const current = requests.find(r => r.id === qrModal.requestId);
+  if (!current) return null;
+
+  return (
+    <div className="text-center">
+      <p className="text-sm font-medium mb-2">Scan QR untuk Approve/Reject</p>
+      <QRCodeCanvas value={generateQrUrlFromFlowId(current.flowId)} size={200} />
+    </div>
+  );
+})()}
+
             <div className="text-right">
               <Button variant="outline" onClick={handleCloseQRModal}>
                 Close
