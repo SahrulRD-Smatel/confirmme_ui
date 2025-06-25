@@ -2,9 +2,11 @@ import { useEffect, useState, useMemo } from 'react';
 import api from '@/api/axiosClient';
 import { Card, CardContent } from '@/components/ui/card/Card';
 import { useAuthStore } from '@/store/useAuthStore';
-import { Loader2, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import {  CheckCircle2, XCircle, Clock } from 'lucide-react';
 import Chart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
+
+import FullscreenSpinner  from "@/components/ui/spinner/FullscreenSpinner";
 
 interface SummaryData {
   approved: number;
@@ -138,7 +140,7 @@ const DashboardPage = () => {
   if (isLoading || loading || !summary) {
     return (
       <div className="flex justify-center items-center flex-1 min-h-screen bg-white dark:bg-gray-900">
-        <Loader2 className="animate-spin h-12 w-12 text-blue-600 dark:text-blue-400" />
+              {loading && <FullscreenSpinner />}
       </div>
     );
   }

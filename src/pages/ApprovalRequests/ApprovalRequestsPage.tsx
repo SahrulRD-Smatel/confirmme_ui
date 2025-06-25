@@ -14,6 +14,7 @@ type ApprovalFlow = {
   approverName: string;
   positionTitle: string;
   status: "Pending" | "Approved" | "Rejected";
+  remark: string;
 };
 
 type Request = {
@@ -261,6 +262,7 @@ function TableView({
                 <th className="px-4 py-3 text-left">Position</th>
                 <th className="px-4 py-3 text-left">Request Title</th>
                 <th className="px-4 py-3 text-left">Status</th>
+                <th className="px-4 py-3 text-left">Catatan</th>
               </>
             )}
           </tr>
@@ -299,6 +301,7 @@ function TableView({
                   <td className="px-4 py-3">{item.positionTitle}</td>
                   <td className="px-4 py-3 italic">{item.requestTitle}</td>
                   <td className="px-4 py-3"><StatusBadge status={item.status} /></td>
+                  <td className="px-4 py-3"><StatusBadge status={item.remark} /></td>
                 </>
               )}
             </tr>

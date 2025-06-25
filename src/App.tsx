@@ -19,6 +19,7 @@ import EditRequestPage from "./pages/ApprovalRequests/EditRequestPage";
 import MyRequestsPage from "./pages/ApprovalRequests/MyRequestsPage";
 
 import ApprovalInboxPage from "./pages/ApprovalInbox/ApprovalInboxPage";
+import ApprovalInboxDetailPage from "./pages/ApprovalInbox/ApprovalInboxDetailPage";
 import ApprovalViaQRPage from "./pages/ApprovalInbox/ApprovalViaQRPage";
 import TaskListPage from"./pages/TaskList/TaskListPage"
 import TaskDetailPage from "./pages/TaskList/TaskDetailPage"
@@ -65,6 +66,10 @@ export default function App() {
 
             <Route path="/admin" element={<DashboardAdminPage />} />
             <Route path="/admin/users" element={<UserManagementPage />} />
+
+
+            {/* tes page */}
+            <Route path="/approval-inboxdetails" element={<ApprovalInboxDetailPage />} />
           </Route>
         </Route>
 

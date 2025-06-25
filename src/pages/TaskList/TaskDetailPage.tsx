@@ -4,6 +4,8 @@ import api from "@/api/axiosClient";
 import { format } from "date-fns";
 import Badge from "@/components/ui/badge/Badge";
 import { Card, CardContent } from "@/components/ui/card/Card";
+import FullscreenSpinner from "@/components/ui/spinner/FullscreenSpinner";
+import { Modal } from "@/components/ui/modal/index";
 
 interface ApprovalFlow {
   id: number;
@@ -28,6 +30,14 @@ interface ApprovalFlow {
   } | null;
 }
 
+interface Attachment {
+  id: number;
+  fileName: string;
+  contentType: string;
+  uploadedAt: string;
+  fileUrl?: string;
+}
+
 interface ApprovalRequestDetail {
   id: number;
   requestNumber: string;
@@ -43,12 +53,17 @@ interface ApprovalRequestDetail {
     role: string;
   };
   approvalFlows?: ApprovalFlow[];
+  attachments?: Attachment[];
 }
 
 const TaskDetailPage = () => {
   const { id } = useParams();
   const [detail, setDetail] = useState<ApprovalRequestDetail | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewType, setPreviewType] = useState<string | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -65,63 +80,131 @@ const TaskDetailPage = () => {
     if (id) fetchDetail();
   }, [id]);
 
-  if (loading) return <p className="p-4">Loading...</p>;
+  const handleDownloadAttachment = async (id: number, fileName: string) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Token tidak ditemukan. Silakan login kembali.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`https://localhost:32769/api/letters/attachments/${id}/download`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal mengunduh file");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download error:", error);
+      alert("Gagal mengunduh file");
+    }
+  };
+
+  const handlePreviewAttachment = async (id: number, contentType: string) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Token tidak ditemukan. Silakan login kembali.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`https://localhost:32769/api/letters/attachments/${id}/download`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Gagal memuat file untuk preview");
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      setPreviewUrl(url);
+      setPreviewType(contentType);
+      setIsPreviewOpen(true);
+    } catch (error) {
+      console.error("Preview error:", error);
+      alert("Gagal memuat preview");
+    }
+  };
+
+  if (loading) return <FullscreenSpinner />;
   if (!detail) return <p className="p-4 text-red-500">Request not found.</p>;
 
   return (
-    <div className="p-4 space-y-6">
-      {/* <h1 className="text-2xl font-bold">Approval Request Detail</h1> */}
+    <div className="p-4 space-y-6 min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white border-l-4 border-primary pl-4 mb-6">
+        Details
+      </h1>
 
       {/* Info Utama */}
-      <Card>
-        <CardContent className="space-y-2 pt-6">
-          <div className="text-lg font-semibold">{detail.title}</div>
-
+      <Card className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800 shadow-md">
+        <CardContent className="space-y-2">
           <div className="grid grid-cols-[140px_auto] text-sm">
-            <span className="text-gray-500">Request No</span>
+            <span className="text-blue-500">Title</span>
+            <span>: {detail.title}</span>
+          </div>
+          <div className="grid grid-cols-[140px_auto] text-sm">
+            <span>Request No</span>
             <span>: {detail.requestNumber}</span>
           </div>
-
           <div className="grid grid-cols-[140px_auto] text-sm">
             <span>Description</span>
             <span>: {detail.description}</span>
           </div>
-
           <div className="grid grid-cols-[140px_auto] text-sm">
             <span>Approval Type</span>
             <span>: {detail.approvalType?.name || "-"}</span>
           </div>
-
           <div className="grid grid-cols-[140px_auto] text-sm">
             <span>Requested By</span>
             <span>
               : {detail.requestedByUser?.fullName} ({detail.requestedByUser?.role})
             </span>
           </div>
-
           <div className="grid grid-cols-[140px_auto] text-sm items-center">
             <span>Status</span>
             <span>
               : <Badge variant="light">{detail.currentStatus}</Badge>
             </span>
           </div>
-
           <div className="grid grid-cols-[140px_auto] text-sm text-gray-400">
             <span>Created At</span>
             <span>: {format(new Date(detail.createdAt), "dd MMM yyyy HH:mm")}</span>
           </div>
         </CardContent>
-      </Card>       
+      </Card>
 
       {/* Approval Flow */}
-      <Card>
+      <Card className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800 shadow-md">
         <CardContent className="pt-6">
-          <h2 className="text-lg font-semibold mb-2">Approval Flow</h2>
+  <div className="flex items-center gap-2 mb-4 border-b pb-2 border-gray-200 dark:border-gray-700">
+    <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2a4 4 0 014-4h4m0 0l-4-4m4 4l-4 4" />
+    </svg>
+    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Approval Flow</h2>
+  </div>
+
+
           <div className="overflow-x-auto">
             <table className="min-w-full border text-sm">
-              <thead className="bg-muted text-left">
+              <thead className="bg-muted bg-gray-100 dark:bg-gray-700 text-left">
                 <tr>
-                  <th className="border px-3 py-2">#</th>
+                  <th className="border px-3 py-2">No</th>
                   <th className="border px-3 py-2">Approver Name</th>
                   <th className="border px-3 py-2">Position</th>
                   <th className="border px-3 py-2">Status</th>
@@ -161,6 +244,70 @@ const TaskDetailPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Attachments */}
+      {detail.attachments && detail.attachments.length > 0 && (
+        <Card className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800 shadow-md">
+          <CardContent className="pt-6">
+  <div className="flex items-center gap-2 mb-4 border-b pb-2 border-gray-200 dark:border-gray-700">
+    <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.586-6.586a4 4 0 10-5.656-5.656l-6.586 6.586" />
+    </svg>
+    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Attachments</h2>
+  </div>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full border text-sm text-gray-800 dark:text-gray-200">
+                <thead className="bg-gray-100 dark:bg-gray-700 text-left text-gray-700 dark:text-gray-200">
+                  <tr>
+                    <th className="border px-3 py-2">No</th>
+                    <th className="border px-3 py-2">File Name</th>
+                    <th className="border px-3 py-2">Uploaded At</th>
+                    <th className="border px-3 py-2">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {detail.attachments.map((file, index) => (
+                    <tr key={file.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="border px-3 py-2">{index + 1}</td>
+                      <td className="border px-3 py-2">{file.fileName}</td>
+                      <td className="border px-3 py-2">
+                        {format(new Date(file.uploadedAt), "dd MMM yyyy HH:mm")}
+                      </td>
+                      <td className="border px-3 py-2 space-x-2">
+                        <button
+                          onClick={() => handlePreviewAttachment(file.id, file.contentType)}
+                          className="text-blue-600 dark:text-blue-400 hover:underline"
+                        >
+                          Preview
+                        </button>
+                        <button
+                          onClick={() => handleDownloadAttachment(file.id, file.fileName)}
+                          className="text-green-600 dark:text-green-400 hover:underline"
+                        >
+                          Download
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Preview Modal */}
+      <Modal isOpen={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} isFullscreen>
+        <div className="w-full h-full flex items-center justify-center bg-black">
+          {previewUrl && previewType?.startsWith("image/") && (
+            <img src={previewUrl} alt="Preview" className="max-w-full max-h-full object-contain" />
+          )}
+          {previewUrl && previewType === "application/pdf" && (
+            <iframe src={previewUrl} title="PDF Preview" className="w-full h-full" />
+          )}
+        </div>
+      </Modal>
     </div>
   );
 };

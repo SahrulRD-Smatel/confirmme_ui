@@ -9,6 +9,8 @@ import Select from "@/components/form/Select";
 import { toast } from "react-hot-toast";
 import api from "@/api/axiosClient";
 
+import FullscreenSpinner  from "@/components/ui/spinner/FullscreenSpinner";
+
 type Approver = {
   approverId: string;
   positionId: string;
@@ -81,10 +83,19 @@ export default function CreateRequestPage() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setForm({ ...form, attachments: Array.from(e.target.files) });
+  if (e.target.files) {
+    const selectedFiles = Array.from(e.target.files);
+
+    const tooBig = selectedFiles.find((f) => f.size > 5 * 1024 * 1024); // 5MB
+    if (tooBig) {
+      toast.error(`File "${tooBig.name}" exceeds the 5MB limit.`);
+      return;
     }
-  };
+
+    setForm({ ...form, attachments: selectedFiles });
+  }
+};
+
 
   const handleApproverSelect = (index: number, approverId: string) => {
     const selected = approverOptions.find((a) => a.approverId === approverId);
@@ -123,6 +134,14 @@ export default function CreateRequestPage() {
       return;
     }
 
+    // Validasi ukuran file maksimal 5MB
+    const oversizedFile = form.attachments.find(file => file.size > 5 * 1024 * 1024);
+    if (oversizedFile) {
+      toast.error(`File "${oversizedFile.name}" exceeds the 5MB limit.`);
+      setLoading(false);
+      return;
+    }
+
     // Validasi form
     const isFormInvalid =
       !form.title.trim() ||
@@ -157,40 +176,21 @@ export default function CreateRequestPage() {
       formData.append("approvalTypeId", form.approvalTypeId);
       formData.append("requestedById", requestedById);
 
-      // Kirim approvers sebagai JSON Blob agar backend bisa parse List<ApproverDto> dengan [FromForm]
-      // formData.append(
-      //   "Approvers",
-      //   new Blob(
-      //     [
-      //       JSON.stringify(
-      //         approvers.map((a) => ({
-      //           approverId: a.approverId,
-      //           positionId: parseInt(a.positionId),
-      //         }))
-      //       ),
-      //     ],
-      //     { type: "application/json" }
-      //   )
-      // );
-
-formData.append(
-  "Approvers",
-  new Blob(
-    [JSON.stringify(approvers.map(a => ({
-      approverId: a.approverId,
-      positionId: Number(a.positionId),
-      approverName: a.approverName,
-      approverEmail: a.approverEmail,
-      positionName: a.positionName
-    })))],
-    { type: "application/json" }
-  )
-);
-
-
-console.log("approvers:", approvers);
-
-
+      formData.append(
+        "Approvers",
+        new Blob(
+          [JSON.stringify(approvers.map(a => ({
+            approverId: a.approverId,
+            positionId: Number(a.positionId),
+            approverName: a.approverName,
+            approverEmail: a.approverEmail,
+            positionName: a.positionName
+          })))],
+          { type: "application/json" }
+        )
+      );
+      
+      console.log("approvers:", approvers);
 
       if (form.attachments.length > 0) {
         form.attachments.forEach((file) => {
@@ -215,6 +215,9 @@ console.log("approvers:", approvers);
 
   return (
     <div>
+      {loading && <FullscreenSpinner />}
+
+
       <PageBreadcrumb pageTitle="Create Request" />
 
       <div className="px-4 sm:px-6 lg:px-8 py-6">
@@ -257,15 +260,29 @@ console.log("approvers:", approvers);
             </div>
 
             <div>
-              <Label htmlFor="attachment">Attachments (Optional)</Label>
+              <Label htmlFor="attachment">Attachments</Label>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                You may upload one or more files.<br />
+                Max size per file: <strong>5MB</strong><br />
+                {/* Forbidden file types: <strong>.exe, .bat, .cmd, .sh</strong> */}
+              </p>
               <Input
                 id="attachment"
                 name="attachment"
                 type="file"
-                accept="application/pdf"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.mp4,.mov,.txt"
                 multiple
                 onChange={handleFileChange}
               />
+
+              {/* ✅ List file yang sudah dipilih */}
+              {form.attachments.length > 0 && (
+                <ul className="mt-2 list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
+                  {form.attachments.map((file, idx) => (
+                    <li key={idx}>{file.name}</li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             <div>

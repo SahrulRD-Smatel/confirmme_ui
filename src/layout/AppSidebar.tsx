@@ -50,8 +50,13 @@ const navItems: NavItem[] = [
     path: "/approval-inbox",
     role: ["HRD", "Manager", "Direktur"],
   },
-
-
+  
+  {
+    name: "Approval Inbox Detail",
+    icon: <PaperPlaneIcon />,
+    path: "/approval-inboxdetails",
+    role: ["HRD", "Manager", "Direktur"],
+  },
 
   {
     name: "Letter",
