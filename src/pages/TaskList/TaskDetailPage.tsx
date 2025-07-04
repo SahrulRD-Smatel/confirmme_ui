@@ -88,11 +88,14 @@ const TaskDetailPage = () => {
     }
 
     try {
-      const response = await fetch(`https://localhost:32769/api/letters/attachments/${id}/download`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `https://localhost:32771/api/letters/attachments/${id}/download`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Gagal mengunduh file");
@@ -120,11 +123,14 @@ const TaskDetailPage = () => {
     }
 
     try {
-      const response = await fetch(`https://localhost:32769/api/letters/attachments/${id}/download`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `https://localhost:32771/api/letters/attachments/${id}/download`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Gagal memuat file untuk preview");
@@ -173,7 +179,8 @@ const TaskDetailPage = () => {
           <div className="grid grid-cols-[140px_auto] text-sm">
             <span>Requested By</span>
             <span>
-              : {detail.requestedByUser?.fullName} ({detail.requestedByUser?.role})
+              : {detail.requestedByUser?.fullName} (
+              {detail.requestedByUser?.role})
             </span>
           </div>
           <div className="grid grid-cols-[140px_auto] text-sm items-center">
@@ -184,7 +191,9 @@ const TaskDetailPage = () => {
           </div>
           <div className="grid grid-cols-[140px_auto] text-sm text-gray-400">
             <span>Created At</span>
-            <span>: {format(new Date(detail.createdAt), "dd MMM yyyy HH:mm")}</span>
+            <span>
+              : {format(new Date(detail.createdAt), "dd MMM yyyy HH:mm")}
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -192,13 +201,24 @@ const TaskDetailPage = () => {
       {/* Approval Flow */}
       <Card className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800 shadow-md">
         <CardContent className="pt-6">
-  <div className="flex items-center gap-2 mb-4 border-b pb-2 border-gray-200 dark:border-gray-700">
-    <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2a4 4 0 014-4h4m0 0l-4-4m4 4l-4 4" />
-    </svg>
-    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Approval Flow</h2>
-  </div>
-
+          <div className="flex items-center gap-2 mb-4 border-b pb-2 border-gray-200 dark:border-gray-700">
+            <svg
+              className="w-5 h-5 text-primary"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 17v-2a4 4 0 014-4h4m0 0l-4-4m4 4l-4 4"
+              />
+            </svg>
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+              Approval Flow
+            </h2>
+          </div>
 
           <div className="overflow-x-auto">
             <table className="min-w-full border text-sm">
@@ -216,8 +236,12 @@ const TaskDetailPage = () => {
                 {detail.approvalFlows?.map((flow, index) => (
                   <tr key={flow.id} className="hover:bg-muted/40">
                     <td className="border px-3 py-2">{index + 1}</td>
-                    <td className="border px-3 py-2">{flow.approver?.fullName}</td>
-                    <td className="border px-3 py-2">{flow.position?.title || "-"}</td>
+                    <td className="border px-3 py-2">
+                      {flow.approver?.fullName}
+                    </td>
+                    <td className="border px-3 py-2">
+                      {flow.position?.title || "-"}
+                    </td>
                     <td className="border px-3 py-2">
                       <span
                         className={`text-xs px-2 py-1 rounded font-medium ${
@@ -249,12 +273,24 @@ const TaskDetailPage = () => {
       {detail.attachments && detail.attachments.length > 0 && (
         <Card className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800 shadow-md">
           <CardContent className="pt-6">
-  <div className="flex items-center gap-2 mb-4 border-b pb-2 border-gray-200 dark:border-gray-700">
-    <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.586-6.586a4 4 0 10-5.656-5.656l-6.586 6.586" />
-    </svg>
-    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Attachments</h2>
-  </div>
+            <div className="flex items-center gap-2 mb-4 border-b pb-2 border-gray-200 dark:border-gray-700">
+              <svg
+                className="w-5 h-5 text-primary"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.586-6.586a4 4 0 10-5.656-5.656l-6.586 6.586"
+                />
+              </svg>
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+                Attachments
+              </h2>
+            </div>
 
             <div className="overflow-x-auto">
               <table className="min-w-full border text-sm text-gray-800 dark:text-gray-200">
@@ -268,7 +304,10 @@ const TaskDetailPage = () => {
                 </thead>
                 <tbody>
                   {detail.attachments.map((file, index) => (
-                    <tr key={file.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <tr
+                      key={file.id}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                    >
                       <td className="border px-3 py-2">{index + 1}</td>
                       <td className="border px-3 py-2">{file.fileName}</td>
                       <td className="border px-3 py-2">
@@ -276,13 +315,17 @@ const TaskDetailPage = () => {
                       </td>
                       <td className="border px-3 py-2 space-x-2">
                         <button
-                          onClick={() => handlePreviewAttachment(file.id, file.contentType)}
+                          onClick={() =>
+                            handlePreviewAttachment(file.id, file.contentType)
+                          }
                           className="text-blue-600 dark:text-blue-400 hover:underline"
                         >
                           Preview
                         </button>
                         <button
-                          onClick={() => handleDownloadAttachment(file.id, file.fileName)}
+                          onClick={() =>
+                            handleDownloadAttachment(file.id, file.fileName)
+                          }
                           className="text-green-600 dark:text-green-400 hover:underline"
                         >
                           Download
@@ -298,13 +341,25 @@ const TaskDetailPage = () => {
       )}
 
       {/* Preview Modal */}
-      <Modal isOpen={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} isFullscreen>
+      <Modal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        isFullscreen
+      >
         <div className="w-full h-full flex items-center justify-center bg-black">
           {previewUrl && previewType?.startsWith("image/") && (
-            <img src={previewUrl} alt="Preview" className="max-w-full max-h-full object-contain" />
+            <img
+              src={previewUrl}
+              alt="Preview"
+              className="max-w-full max-h-full object-contain"
+            />
           )}
           {previewUrl && previewType === "application/pdf" && (
-            <iframe src={previewUrl} title="PDF Preview" className="w-full h-full" />
+            <iframe
+              src={previewUrl}
+              title="PDF Preview"
+              className="w-full h-full"
+            />
           )}
         </div>
       </Modal>

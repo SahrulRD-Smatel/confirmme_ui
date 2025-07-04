@@ -1,19 +1,16 @@
-
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 import { useAuthStore } from "@/store/useAuthStore";
-
 
 import {
   ChevronDownIcon,
   GridIcon,
   ListIcon,
   HorizontaLDots,
-  UserCircleIcon,
   PaperPlaneIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
-import { ClipboardPlusIcon, LetterTextIcon } from "lucide-react";
+import { ClipboardPlusIcon, MailIcon, IdCardIcon, UsersIcon  } from "lucide-react";
 
 type NavItem = {
   name: string;
@@ -33,11 +30,11 @@ const navItems: NavItem[] = [
 
   {
     icon: <ClipboardPlusIcon />,
-    name: "Request for Approval",
+    name: "My Requests",
     path: "/approval-requests",
     role: ["Staff"],
   },
-  
+
   {
     name: "Approval Task List",
     icon: <ListIcon />,
@@ -50,46 +47,60 @@ const navItems: NavItem[] = [
     path: "/approval-inbox",
     role: ["HRD", "Manager", "Direktur"],
   },
-  
-  {
-    name: "Approval Inbox Detail",
-    icon: <PaperPlaneIcon />,
-    path: "/approval-inboxdetails",
-    role: ["HRD", "Manager", "Direktur"],
-  },
+
+  // {
+  //   name: "Approval Inbox Detail",
+  //   icon: <PaperPlaneIcon />,
+  //   path: "/approval-inboxdetails",
+  //   role: ["HRD", "Manager", "Direktur"],
+  // },
 
   {
-    name: "Letter",
-    icon: <LetterTextIcon />,
-    path: "/letters/metadata/requestId",
+    name: "My Letter",
+    icon: <MailIcon />,
+    path: "/letters",
     role: ["Staff"],
   },
 
   // Tambahan menu Admin
   {
-    icon: <UserCircleIcon />, 
+    icon: <GridIcon />,
     name: "Dashboard Admin",
     path: "/admin",
     role: ["Admin"],
   },
   {
-    icon: <UserCircleIcon />,  
+    icon: <UsersIcon  />,
     name: "Manajemen User",
     path: "/admin/users",
     role: ["Admin"],
   },
+
+
 ];
 
 const othersItems: NavItem[] = [
+
   {
-    icon: <UserCircleIcon />,
-    name: "Profile",
-    role: ["Staff", "HRD", "Manager", "Direktur"],
+    icon: <UsersIcon  />,
+    name: "Management",
+    role: ["HRD"],
     subItems: [
-      { name: "Account Detail", path: "/signin" },
+      { name: "Managemen User", path: "/user-management" },
+      
+    ],
+  },
+
+  {
+    icon: <IdCardIcon />,
+    name: "Profile",
+    role: ["Staff", "HRD", "Manager", "Direktur", "Admin"],
+    subItems: [
+      { name: "Account Detail", path: "/profile/:id" },
       // { name: "Change Password", path: "/signup" },
     ],
   },
+
 ];
 
 const AppSidebar: React.FC = () => {
@@ -97,7 +108,6 @@ const AppSidebar: React.FC = () => {
   const location = useLocation();
 
   const { role } = useAuthStore();
-
 
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main" | "others";
@@ -249,7 +259,10 @@ const AppSidebar: React.FC = () => {
                           ? "menu-dropdown-item-active"
                           : "menu-dropdown-item-inactive"
                       }`}
-                    ></Link>
+                    >
+                      {subItem.name}
+
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -297,10 +310,12 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots className="size-6" />
                 )}
               </h2>
-              {renderMenuItems(navItems.filter((item) => item.role.includes(role || "")), "main")}
-
+              {renderMenuItems(
+                navItems.filter((item) => item.role.includes(role || "")),
+                "main"
+              )}
             </div>
-            {/* <div className="">
+            <div className="">
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
                   !isExpanded && !isHovered
@@ -316,7 +331,7 @@ const AppSidebar: React.FC = () => {
               </h2>
               {renderMenuItems(othersItems.filter((item) => item.role.includes(role || "")), "others")}
 
-            </div> */}
+            </div>
           </div>
         </nav>
       </div>

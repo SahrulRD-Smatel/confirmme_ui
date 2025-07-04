@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { login } from "@/api/auth"; // gunakan auth.ts
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
@@ -122,12 +122,12 @@ export default function SignInForm() {
                   Keep me logged in
                 </span>
               </div>
-              <Link
+              {/* <Link
                 to="/reset-password"
                 className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
               >
                 Forgot password?
-              </Link>
+              </Link> */}
             </div>
 
             <div>
@@ -148,7 +148,7 @@ export default function SignInForm() {
         </form>
 
         <div className="mt-5 text-center">
-          <p className="text-sm font-normal text-gray-700 dark:text-gray-400">
+          {/* <p className="text-sm font-normal text-gray-700 dark:text-gray-400">
             Don't have an account?{" "}
             <Link
               to="/signup"
@@ -156,7 +156,7 @@ export default function SignInForm() {
             >
               Sign Up
             </Link>
-          </p>
+          </p> */}
         </div>
       </div>
     </div>

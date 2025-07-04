@@ -22,7 +22,7 @@ export const Spinner = () => {
         d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
       />
     </svg>
-    <span>Submitting request...</span>
+    <span>INFO DATA...</span>
   </div>
   );
 };

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://localhost:32769/api",
+  baseURL: "https://localhost:32771/api",
   withCredentials: false, // Membutuhkan cookies untuk autentikasi
   headers: {
     "Content-Type": "application/json",
@@ -12,15 +12,17 @@ const api = axios.create({
 //   return config;
 // });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers["Authorization"] = `Bearer ${token}`;
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-},(error) => {
-  return Promise.reject(error);
-});
-
+);
 
 export default api;

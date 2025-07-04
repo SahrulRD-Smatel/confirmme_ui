@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "@/api/axiosClient";
 import axios from "axios";
-
 import { format } from "date-fns";
 import {
-  Eye, QrCode, MessageCircle, Check, X
+  Eye, QrCode, Check, X
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card/Card";
 import Button from "@/components/ui/button/Button";
@@ -13,31 +12,31 @@ import FullscreenSpinner from "@/components/ui/spinner/FullscreenSpinner";
 import { Modal } from "@/components/ui/modal/index";
 import Textarea from "@/components/form/input/TextArea";
 import { toast } from "sonner";
-
-interface InboxItemDto {
-  approvalRequestId: number;
-  requestId: string;
-  title: string;
-  requestedById: string;
-  status: string;
-  createdAt: string;
-  currentStep: number;
-  totalSteps: number;
-  flowId: number;
-}
+import { useApprovalInboxStore } from "@/store/approvalInboxStore";
 
 const ApprovalInboxPage = () => {
-  const [items, setItems] = useState<InboxItemDto[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    items,
+    setItems,
+    removeItemById,
+    loading,
+    globalActionLoading,
+    setGlobalActionLoading,
+    setLoading,
+  } = useApprovalInboxStore();
+
   const [selectedFlowId, setSelectedFlowId] = useState<number | null>(null);
   const [showQR, setShowQR] = useState(false);
   const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
-  const [showNoteModal, setShowNoteModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<InboxItemDto | null>(null);
+  const [showRemarkModal, setShowRemarkModal] = useState(false);
   const [remark, setRemark] = useState("");
+  // const [actionLoading, setActionLoading] = useState(false);
+  const [selectedAction, setSelectedAction] = useState<"Approved" | "Rejected" | null>(null);
+  const [selectedItem, setSelectedItem] = useState<null | (typeof items)[0]>(null);
 
   const fetchInbox = async () => {
     try {
+      setLoading(true);
       const res = await api.get("/approvalrequests/inbox");
       setItems(res.data);
     } catch (error) {
@@ -51,72 +50,62 @@ const ApprovalInboxPage = () => {
     fetchInbox();
   }, []);
 
-  // Fetch QR Code as image blob
   useEffect(() => {
-  const fetchQRImage = async () => {
-    if (!selectedFlowId) return;
+    const fetchQRImage = async () => {
+      if (!selectedFlowId) return;
+      try {
+        const response = await api.get(`/Barcode/generate-qr?flowId=${selectedFlowId}`, {
+          responseType: "blob",
+        });
+        const blob = new Blob([response.data], { type: "image/png" });
+        const imageUrl = URL.createObjectURL(blob);
+        setQrImageUrl(imageUrl);
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          toast.error(`QR error: ${error.response?.statusText || error.message}`);
+        } else {
+          toast.error("Unexpected error when loading QR.");
+        }
+        setQrImageUrl(null);
+      }
+    };
+
+    if (showQR && selectedFlowId) fetchQRImage();
+  }, [selectedFlowId, showQR]);
+
+  const handleSubmitApproval = async () => {
+    if (!selectedItem || !selectedAction) return;
+    if (remark.trim() === "") {
+      toast.error("Please enter a remark.");
+      return;
+    }
 
     try {
-      const response = await api.get(`/Barcode/generate-qr?flowId=${selectedFlowId}`, {
-        responseType: "blob",
-      });
-
-      const blob = new Blob([response.data], { type: "image/png" });
-      const imageUrl = URL.createObjectURL(blob);
-      setQrImageUrl(imageUrl);
-    } catch (error: unknown) {
-  if (axios.isAxiosError(error)) {
-    console.error("QR Axios Error:", {
-      status: error.response?.status,
-      data: error.response?.data,
-    });
-
-    toast.error(
-      "Failed to load QR image: " +
-        (error.response?.status
-          ? `${error.response.status} ${error.response.statusText}`
-          : error.message)
-    );
-  } else {
-    console.error("Unexpected QR Error:", error);
-    toast.error("Unexpected error occurred when loading QR.");
-  }
-
-  setQrImageUrl(null);
-}
-
-  };
-
-  if (showQR && selectedFlowId) {
-    fetchQRImage();
-  }
-}, [selectedFlowId, showQR]);
-
-
-  const handleApproveReject = async (
-    approvalRequestId: number,
-    status: "Approved" | "Rejected",
-    remark: string
-  ) => {
-    try {
+      setGlobalActionLoading(true);
       const approverId = localStorage.getItem("userId");
       if (!approverId) throw new Error("User not found");
 
-      await api.put(`/approvalrequests/${approvalRequestId}/approve`, {
+      await api.put(`/approvalrequests/${selectedItem.approvalRequestId}/approve`, {
         approverId,
-        status,
+        status: selectedAction,
         remark,
       });
 
-      toast.success(`Request ${status.toLowerCase()} successfully`);
-      fetchInbox();
+      toast.success(`Request ${selectedAction.toLowerCase()} successfully`);
+      removeItemById(selectedItem.approvalRequestId);
+      setShowRemarkModal(false);
+      setSelectedItem(null);
+      setSelectedAction(null);
+      setRemark("");
     } catch (err) {
       toast.error("Action failed");
       console.error(err);
+    } finally {
+      setGlobalActionLoading(false);
     }
   };
 
-  if (loading) return <FullscreenSpinner />;
+  if (loading || globalActionLoading) return <FullscreenSpinner />;
 
   return (
     <div className="px-6 py-4 min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -140,18 +129,19 @@ const ApprovalInboxPage = () => {
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <Badge variant="light">{item.status}</Badge>
-                  <span>
-                    Step {item.currentStep} of {item.totalSteps}
-                  </span>
+                  <span>Step {item.currentStep} of {item.totalSteps}</span>
                 </div>
                 <div className="flex flex-wrap gap-2 pt-2">
                   <Button
                     size="sm"
                     variant="outline"
                     className="gap-1 text-green-600 hover:bg-green-600 hover:text-white"
-                    onClick={() =>
-                      handleApproveReject(item.approvalRequestId, "Approved", "")
-                    }
+                    onClick={() => {
+                      setSelectedAction("Approved");
+                      setSelectedItem(item);
+                      setRemark("");
+                      setShowRemarkModal(true);
+                    }}
                   >
                     <Check className="w-4 h-4" /> Approve
                   </Button>
@@ -160,24 +150,14 @@ const ApprovalInboxPage = () => {
                     size="sm"
                     variant="outline"
                     className="gap-1 text-red-600 hover:bg-red-600 hover:text-white"
-                    onClick={() =>
-                      handleApproveReject(item.approvalRequestId, "Rejected", "")
-                    }
-                  >
-                    <X className="w-4 h-4" /> Reject
-                  </Button>
-
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-1 text-gray-600 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700"
                     onClick={() => {
+                      setSelectedAction("Rejected");
                       setSelectedItem(item);
-                      setShowNoteModal(true);
                       setRemark("");
+                      setShowRemarkModal(true);
                     }}
                   >
-                    <MessageCircle className="w-4 h-4" /> Add Note
+                    <X className="w-4 h-4" /> Reject
                   </Button>
 
                   <Button
@@ -211,51 +191,43 @@ const ApprovalInboxPage = () => {
 
       {/* Modal QR */}
       <Modal
-  isOpen={showQR}
-  onClose={() => {
-    setShowQR(false);
-    setQrImageUrl(null);
-  }}
-  className="p-6 max-w-sm"
->
-  <h2 className="text-lg font-semibold mb-4">QR Code Approval</h2>
+        isOpen={showQR}
+        onClose={() => {
+          setShowQR(false);
+          setQrImageUrl(null);
+        }}
+        className="p-6 max-w-sm"
+      >
+        <h2 className="text-lg font-semibold mb-4">QR Code Approval</h2>
+        {qrImageUrl === null ? (
+          <p className="text-center text-red-500">QR code failed to load. Please try again.</p>
+        ) : (
+          <div className="flex justify-center items-center">
+            <img
+              src={qrImageUrl}
+              alt="QR Code"
+              className="w-48 h-48 object-contain border border-gray-300 rounded-lg"
+            />
+          </div>
+        )}
+      </Modal>
 
-  {qrImageUrl === null ? (
-    <p className="text-center text-red-500">QR code failed to load. Please try again.</p>
-  ) : (
-    <div className="flex justify-center items-center">
-      <img
-        src={qrImageUrl}
-        alt="QR Code"
-        className="w-48 h-48 object-contain border border-gray-300 rounded-lg"
-      />
-    </div>
-  )}
-</Modal>
-
-
-      {/* Modal Add Note */}
-      <Modal isOpen={showNoteModal} onClose={() => setShowNoteModal(false)} className="p-6 max-w-md">
-        <h2 className="text-lg font-semibold mb-4">Add Remark</h2>
+      {/* Modal Remark */}
+      <Modal isOpen={showRemarkModal} onClose={() => setShowRemarkModal(false)} className="p-6 max-w-md">
+        <h2 className="text-lg font-semibold mb-4">{selectedAction} Confirmation</h2>
         <Textarea
-          placeholder="Write your remark..."
+          placeholder="Enter your remark..."
           value={remark}
           onChange={setRemark}
         />
         <div className="mt-4 flex justify-end gap-2">
-          <Button variant="primary" onClick={() => setShowNoteModal(false)}>
+          <Button variant="primary" onClick={() => setShowRemarkModal(false)}>
             Cancel
           </Button>
-          <Button
-            onClick={() => {
-              if (selectedItem) {
-                handleApproveReject(selectedItem.approvalRequestId, "Approved", remark);
-                setShowNoteModal(false);
-              }
-            }}
-          >
-            Submit
+          <Button variant="primary" onClick={handleSubmitApproval} disabled={globalActionLoading}>
+            {globalActionLoading ? "Submitting..." : "Submit"}
           </Button>
+
         </div>
       </Modal>
     </div>

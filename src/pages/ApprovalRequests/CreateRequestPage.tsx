@@ -38,6 +38,8 @@ export default function CreateRequestPage() {
 
   const [approvalTypes, setApprovalTypes] = useState<ApprovalType[]>([]);
   const [approverOptions, setApproverOptions] = useState<ApproverOption[]>([]);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
 
   const [form, setForm] = useState({
     title: "",
@@ -123,6 +125,20 @@ export default function CreateRequestPage() {
     setApprovers(approvers.filter((_, i) => i !== index));
   };
 
+  const validateForm = () => {
+  const newErrors: { [key: string]: string } = {};
+
+  if (!form.title.trim()) newErrors.title = "Title wajib diisi.";
+  if (!form.description.trim()) newErrors.description = "Description wajib diisi.";
+  if (!form.approvalTypeId.trim()) newErrors.approvalTypeId = "Approval type wajib dipilih.";
+  if (form.attachments.length === 0) newErrors.attachments = "Minimal 1 attachment wajib diunggah.";
+  if (approvers.some((a) => !a.approverId.trim())) newErrors.approvers = "Approver wajib dipilih";
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -133,6 +149,12 @@ export default function CreateRequestPage() {
       setLoading(false);
       return;
     }
+
+    if (!validateForm()) {
+    toast.error("Pastikan semua field wajib sudah diisi.");
+    setLoading(false);
+    return;
+}
 
     // Validasi ukuran file maksimal 5MB
     const oversizedFile = form.attachments.find(file => file.size > 5 * 1024 * 1024);
@@ -231,7 +253,9 @@ export default function CreateRequestPage() {
                 value={form.title}
                 onChange={handleChange}
                 required
+                className={errors.title ? "border-red-500" : ""}
               />
+               {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
             </div>
 
             <div>
@@ -243,7 +267,9 @@ export default function CreateRequestPage() {
                 onChange={handleTextareaChange}
                 rows={4}
                 required
+                className={errors.description ? "border-red-500" : ""}
               />
+              {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
             </div>
 
             <div>
@@ -256,7 +282,9 @@ export default function CreateRequestPage() {
                 placeholder="Select Approval Type"
                 onChange={handleApprovalTypeChange}
                 value={form.approvalTypeId}
+                className={errors.approvalTypeId ? "border-red-500" : ""}
               />
+              {errors.approvalTypeId && <p className="text-red-500 text-sm mt-1">{errors.approvalTypeId}</p>}
             </div>
 
             <div>
@@ -273,6 +301,7 @@ export default function CreateRequestPage() {
                 accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.mp4,.mov,.txt"
                 multiple
                 onChange={handleFileChange}
+                className={errors.attachments ? "border-red-500" : ""}
               />
 
               {/* ✅ List file yang sudah dipilih */}
@@ -282,6 +311,10 @@ export default function CreateRequestPage() {
                     <li key={idx}>{file.name}</li>
                   ))}
                 </ul>
+              )}
+
+              {errors.attachments && (
+                <p className="text-red-500 text-sm mt-1">{errors.attachments}</p>
               )}
             </div>
 
@@ -299,7 +332,9 @@ export default function CreateRequestPage() {
                       placeholder="Select Approver"
                       onChange={(val) => handleApproverSelect(index, val)}
                       value={approver.approverId}
+                      className={errors.approvers ? "border-red-500" : ""}
                     />
+                    {errors.approvers && <p className="text-red-500 text-sm mt-1">{errors.approvers}</p>}
                   </div>
 
                   {approvers.length > 1 && (
