@@ -55,7 +55,7 @@ export default function DashboardAdminPage() {
       },
       labels: roles,
       legend: {
-        position: "bottom"
+        position: "bottom" as "top" | "bottom" | "left" | "right"
       }
     }
   };

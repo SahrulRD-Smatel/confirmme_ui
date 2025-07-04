@@ -36,7 +36,6 @@ interface Position {
 
 export default function UserManagementPageAdmin() {
   const [users, setUsers] = useState<UserDto[]>([]);
-  const [positions, setPositions] = useState<Position[]>([]);
   const [positionMap, setPositionMap] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -69,7 +68,7 @@ export default function UserManagementPageAdmin() {
   const fetchPositions = async () => {
     try {
       const res = await api.get("/users/positions");
-      setPositions(res.data);
+      
       const map: Record<string, number> = {};
       res.data.forEach((p: Position) => {
         map[p.title] = p.id;

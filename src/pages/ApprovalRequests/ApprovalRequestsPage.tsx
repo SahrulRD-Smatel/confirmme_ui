@@ -37,7 +37,7 @@ export default function ApprovalRequestsPage() {
   const [search, setSearch] = useState("");
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
   const [activeTab, setActiveTab] = useState<"requests" | "approvers">("requests");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -49,12 +49,11 @@ export default function ApprovalRequestsPage() {
   useEffect(() => {
     const fetchRequests = async () => {
       setLoading(true);
-      setError(null);
+      
       try {
         const response = await api.get("/ApprovalRequests");
         setRequests(response.data);
       } catch (err: any) {
-        setError(err?.response?.data?.message || "Failed to fetch requests");
         toast.error(err?.response?.data?.message || "Failed to fetch requests");
       } finally {
         setLoading(false);
