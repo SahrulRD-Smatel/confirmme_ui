@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://localhost:32771/api",
+  baseURL: "http://103.176.78.120:8080/api",
   withCredentials: false, // Membutuhkan cookies untuk autentikasi
   headers: {
     "Content-Type": "application/json",
