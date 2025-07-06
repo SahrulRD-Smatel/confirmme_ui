@@ -89,7 +89,7 @@ const TaskDetailPage = () => {
 
     try {
       const response = await fetch(
-        `https://localhost:32771/api/letters/attachments/${id}/download`,
+        `http://103.176.78.120:8080/api/letters/attachments/${id}/download`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -124,7 +124,7 @@ const TaskDetailPage = () => {
 
     try {
       const response = await fetch(
-        `https://localhost:32771/api/letters/attachments/${id}/download`,
+        `http://103.176.78.120:8080/api/letters/attachments/${id}/download`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
